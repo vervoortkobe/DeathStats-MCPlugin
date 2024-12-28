@@ -10,6 +10,7 @@ commands:
     usage: |
       /deathstats help - Show help information
       /deathstats check <player> - Check a player's death statistics
+      /deathstats set <player> - Set deaths for a specific player
       /deathstats reset <player> - Reset deaths for a specific player
       /deathstats top - Show the death statistics leaderboard
       /deathstats toggle - Toggle death statistics scoreboard
@@ -25,8 +26,12 @@ permissions:
     description: Allows checking player death statistics
     default: op
 
+  deathstats.set:
+    description: Allows setting a player's deaths
+    default: op
+
   deathstats.reset:
-    description: Allows resetting player deaths
+    description: Allows resetting a player's deaths
     default: op
 
   deathstats.top:

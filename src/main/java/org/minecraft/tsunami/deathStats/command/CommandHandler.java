@@ -39,6 +39,7 @@ public class CommandHandler {
                     yield true;
                 }
                 case "check" -> handleCheckCommand(sender, args);
+                case "set" -> handleSetCommand(sender, args);
                 case "reset" -> handleResetCommand(sender, args);
                 case "top", "lb", "leaderboard", "list" -> handleTopCommand(sender);
                 case "toggle" -> handleToggleCommand(sender);
@@ -53,9 +54,10 @@ public class CommandHandler {
             sender.sendMessage(ChatColor.GOLD + "DeathStats Commands:");
             sender.sendMessage(ChatColor.YELLOW + "/deathstats" + ChatColor.WHITE + " - Display your death stats 💀");
             sender.sendMessage(ChatColor.YELLOW + "/deathstats help" + ChatColor.WHITE + " - Show this help message");
-            sender.sendMessage(ChatColor.YELLOW + "/deathstats check <player>" + ChatColor.WHITE + " - Check a player's deaths");
-            sender.sendMessage(ChatColor.YELLOW + "/deathstats reset <player>" + ChatColor.WHITE + " - Reset a player's deaths");
             sender.sendMessage(ChatColor.YELLOW + "/deathstats top" + ChatColor.WHITE + " - Show leaderboard of deaths");
+            sender.sendMessage(ChatColor.YELLOW + "/deathstats check <player>" + ChatColor.WHITE + " - Check a player's deaths");
+            sender.sendMessage(ChatColor.YELLOW + "/deathstats set <player>" + ChatColor.WHITE + " - Set a player's deaths");
+            sender.sendMessage(ChatColor.YELLOW + "/deathstats reset <player>" + ChatColor.WHITE + " - Reset a player's deaths");
             sender.sendMessage(ChatColor.YELLOW + "/deathstats toggle" + ChatColor.WHITE + " - Toggle the scoreboard visibility");
         }
 
@@ -84,9 +86,53 @@ public class CommandHandler {
             return true;
         }
 
+        private boolean handleSetCommand(CommandSender sender, String[] args) {
+            if (!sender.hasPermission("deathstats.set")) {
+                sender.sendMessage(ChatColor.DARK_RED + "You don't have permission to set player deaths.");
+                return true;
+            }
+
+            if (args.length < 3) {
+                sender.sendMessage(ChatColor.RED + "Usage: /deathstats set <player> <amount>");
+                return true;
+            }
+
+            Player target = Bukkit.getPlayer(args[1]);
+            if (target == null) {
+                sender.sendMessage(ChatColor.RED + "Player not found.");
+                return true;
+            }
+
+            int newDeaths;
+            try {
+                newDeaths = Integer.parseInt(args[2]);
+                if (newDeaths < 0) {
+                    sender.sendMessage(ChatColor.RED + "Death count cannot be negative.");
+                    return true;
+                }
+            } catch (NumberFormatException e) {
+                sender.sendMessage(ChatColor.RED + "Invalid death count. Please enter a valid number.");
+                return true;
+            }
+
+            UUID targetUUID = target.getUniqueId();
+            int previousDeaths = DeathStatsDAO.playerDeaths.getOrDefault(targetUUID, 0);
+
+            DeathStatsDAO.playerDeaths.put(targetUUID, newDeaths);
+            DeathStatsDAO.saveDeathStats();
+            ScoreBoardHandler.updateScoreboard();
+
+            String previousDeathWord = previousDeaths == 1 ? "death" : "deaths";
+            String newDeathWord = newDeaths == 1 ? "death" : "deaths";
+            sender.sendMessage(ChatColor.GREEN + "Deaths for " + target.getName() + " have been set from " +
+                    ChatColor.YELLOW + previousDeaths + ChatColor.GREEN + " " + previousDeathWord + " to " +
+                    ChatColor.YELLOW + newDeaths + ChatColor.GREEN + " " + newDeathWord + ".");
+            return true;
+        }
+
         private boolean handleResetCommand(CommandSender sender, String[] args) {
             if (!sender.hasPermission("deathstats.reset")) {
-                sender.sendMessage(ChatColor.RED + "You don't have permission to reset player deaths.");
+                sender.sendMessage(ChatColor.DARK_RED + "You don't have permission to reset player deaths.");
                 return true;
             }
 
@@ -161,7 +207,7 @@ public class CommandHandler {
 
         private boolean handleToggleCommand(CommandSender sender) {
             if (!sender.hasPermission("deathstats.toggle")) {
-                sender.sendMessage(ChatColor.RED + "You don't have permission to toggle the death scoreboard.");
+                sender.sendMessage(ChatColor.DARK_RED + "You don't have permission to toggle the death scoreboard.");
                 return true;
             }
 
