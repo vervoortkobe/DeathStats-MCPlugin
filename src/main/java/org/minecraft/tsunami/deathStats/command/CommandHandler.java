@@ -68,17 +68,17 @@ public class CommandHandler {
                 return true;
             }
 
-            Player target;
+            OfflinePlayer target;
             if (args.length < 2) {
                 if (!(sender instanceof Player)) {
                     sender.sendMessage(ChatColor.RED + "Usage: /deathstats check <player>");
                     return true;
                 }
-                target = (Player) sender;
+                target = (OfflinePlayer) sender;
             } else {
-                target = Bukkit.getPlayer(args[1]);
-                if (target == null) {
-                    sender.sendMessage(ChatColor.RED + "Player not found.");
+                target = Bukkit.getOfflinePlayer(args[1]);
+                if (!target.hasPlayedBefore()) {
+                    sender.sendMessage(ChatColor.RED + "Player has never joined the server.");
                     return true;
                 }
             }
@@ -98,9 +98,9 @@ public class CommandHandler {
                 return true;
             }
 
-            Player target = Bukkit.getPlayer(args[1]);
-            if (target == null) {
-                sender.sendMessage(ChatColor.RED + "Player not found.");
+            OfflinePlayer target = Bukkit.getOfflinePlayer(args[1]);
+            if (!target.hasPlayedBefore()) {
+                sender.sendMessage(ChatColor.RED + "Player has never joined the server.");
                 return true;
             }
 
@@ -229,7 +229,8 @@ public class CommandHandler {
 
         private void displayPlayerStats(CommandSender sender, UUID playerId) {
             int deaths = DeathStatsDAO.playerDeaths.getOrDefault(playerId, 0);
-            String playerName = Bukkit.getOfflinePlayer(playerId).getName();
+            OfflinePlayer player = Bukkit.getOfflinePlayer(playerId);
+            String playerName = player.getName() != null ? player.getName() : "Unknown Player";
 
             List<Map.Entry<UUID, Integer>> sortedEntries = DeathStatsDAO.playerDeaths.entrySet().stream()
                     .sorted(Map.Entry.<UUID, Integer>comparingByValue().reversed())
@@ -238,12 +239,12 @@ public class CommandHandler {
             int rank = sortedEntries.indexOf(Map.entry(playerId, deaths)) + 1;
             ChatColor rankColor = getColorForRank(rank);
 
-            // Display only the number of deaths in bold
             String displayDeaths = ChatColor.BOLD.toString() + deaths;
 
             sender.sendMessage(ChatColor.GOLD + "☠ Death Statistics for " + ChatColor.YELLOW + playerName);
             sender.sendMessage(ChatColor.WHITE + "Deaths: " + displayDeaths);
             sender.sendMessage(ChatColor.WHITE + "Rank: " + rankColor + "#" + rank);
         }
+
     }
 }
