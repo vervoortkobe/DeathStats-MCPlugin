@@ -2,6 +2,7 @@ package org.minecraft.tsunami.deathStats.command;
 
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -141,9 +142,9 @@ public class CommandHandler {
                 return true;
             }
 
-            Player target = Bukkit.getPlayer(args[1]);
-            if (target == null) {
-                sender.sendMessage(ChatColor.RED + "Player not found.");
+            OfflinePlayer target = Bukkit.getOfflinePlayer(args[1]);
+            if (!target.hasPlayedBefore()) {
+                sender.sendMessage(ChatColor.RED + "Player has never joined the server.");
                 return true;
             }
 
