@@ -7,8 +7,6 @@ import org.bukkit.plugin.java.JavaPlugin;
 import org.minecraft.tsunami.deathStats.dao.DeathStatsDAO;
 import org.minecraft.tsunami.deathStats.scoreboard.ScoreBoardHandler;
 
-import static org.bukkit.Bukkit.getServer;
-
 public class PlayerJoinHandler implements Listener {
     private final JavaPlugin plugin;
 

@@ -9,7 +9,6 @@ import org.minecraft.tsunami.deathStats.dao.DeathStatsDAO;
 import java.util.UUID;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 import static org.minecraft.tsunami.deathStats.util.MainUtil.getColorForRank;
 

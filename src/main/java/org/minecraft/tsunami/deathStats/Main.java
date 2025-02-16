@@ -2,9 +2,7 @@ package org.minecraft.tsunami.deathStats;
 
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
-import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
-import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.jetbrains.annotations.NotNull;
 import org.minecraft.tsunami.deathStats.command.CommandHandler;
@@ -29,11 +27,14 @@ public final class Main extends JavaPlugin implements Listener {
         if (DeathStatsDAO.scoreboardEnabled) {
             ScoreBoardHandler.setupScoreboard();
         }
+        getLogger().info("💀 DeathStats plugin has been enabled!");
     }
 
     @Override
     public void onDisable() {
         DeathStatsDAO.saveDeathStats();
+        getLogger().info("💀 DeathStats plugin has been disabled!");
+
     }
 
     @Override
