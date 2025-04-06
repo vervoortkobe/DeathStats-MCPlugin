@@ -1,48 +1,80 @@
 package org.minecraft.tsunami.deathStats;
 
-import org.bukkit.command.Command;
-import org.bukkit.command.CommandSender;
-import org.bukkit.event.Listener;
+import org.bukkit.Bukkit;
 import org.bukkit.plugin.java.JavaPlugin;
-import org.jetbrains.annotations.NotNull;
-import org.minecraft.tsunami.deathStats.command.CommandHandler;
+import org.minecraft.tsunami.deathStats.command.BaseCommand;
+import org.minecraft.tsunami.deathStats.config.ConfigManager;
 import org.minecraft.tsunami.deathStats.dao.DeathStatsDAO;
 import org.minecraft.tsunami.deathStats.eventhandler.PlayerDeathHandler;
-import org.minecraft.tsunami.deathStats.eventhandler.PlayerJoinHandler;
-import org.minecraft.tsunami.deathStats.scoreboard.ScoreBoardHandler;
+import org.minecraft.tsunami.deathStats.eventhandler.PlayerJoinQuitHandler;
+import org.minecraft.tsunami.deathStats.eventhandler.HealthListener;
+import org.minecraft.tsunami.deathStats.manager.HealthDisplayManager;
+import org.minecraft.tsunami.deathStats.manager.ScoreboardHandler;
+import org.minecraft.tsunami.deathStats.service.UpdateChecker;
 
-public final class Main extends JavaPlugin implements Listener {
+import java.util.Objects;
+
+public final class Main extends JavaPlugin {
+
+    private static Main instance;
+    private ConfigManager configManager;
+    private ScoreboardHandler scoreboardHandler;
+    private HealthDisplayManager healthDisplayManager;
 
     @Override
     public void onEnable() {
-        if (!getDataFolder().exists()) {
-            getDataFolder().mkdir();
+        instance = this;
+
+        configManager = new ConfigManager(this);
+        configManager.loadConfig();
+
+        DeathStatsDAO.initialize(getDataFolder(), getLogger());
+
+        scoreboardHandler = new ScoreboardHandler(this, configManager);
+        healthDisplayManager = new HealthDisplayManager(this, configManager);
+
+        scoreboardHandler.setupScoreboard();
+
+        getServer().getPluginManager().registerEvents(new PlayerJoinQuitHandler(scoreboardHandler, healthDisplayManager), this);
+        getServer().getPluginManager().registerEvents(new PlayerDeathHandler(configManager, scoreboardHandler), this);
+        getServer().getPluginManager().registerEvents(new HealthListener(healthDisplayManager), this);
+
+
+        try {
+            BaseCommand baseCommand = new BaseCommand(this, configManager, scoreboardHandler, healthDisplayManager);
+            Objects.requireNonNull(getCommand("deathstats"), "Command 'deathstats' not found in plugin.yml!")
+                    .setExecutor(baseCommand);
+            Objects.requireNonNull(getCommand("deathstats"), "Command 'deathstats' not found in plugin.yml!")
+                    .setTabCompleter(baseCommand);
+        } catch (NullPointerException e) {
+            getLogger().severe("Failed to register command 'deathstats'! Make sure it's in plugin.yml.");
+            Bukkit.getPluginManager().disablePlugin(this);
+            return;
         }
 
-        DeathStatsDAO.initialize(getDataFolder());
+        new UpdateChecker(this, configManager).checkForUpdates();
 
-        getServer().getPluginManager().registerEvents(new PlayerJoinHandler(this), this);
-        getServer().getPluginManager().registerEvents(new PlayerDeathHandler(), this);
-
-        if (DeathStatsDAO.scoreboardEnabled) {
-            ScoreBoardHandler.setupScoreboard();
-        }
-        getLogger().info("💀 DeathStats plugin has been enabled!");
+        getLogger().info(configManager.getPrefix() + "DeathStats plugin v" + getDescription().getVersion() + " has been enabled!");
     }
 
     @Override
     public void onDisable() {
-        DeathStatsDAO.saveDeathStats();
-        getLogger().info("💀 DeathStats plugin has been disabled!");
+        getLogger().info("Disabling DeathStats...");
 
+        DeathStatsDAO.savePlayerDeaths();
+
+        if (scoreboardHandler != null) {
+            scoreboardHandler.cleanup();
+        }
+        if (healthDisplayManager != null) {
+            healthDisplayManager.cleanup();
+        }
+
+        getLogger().info(configManager.getPrefix() + "DeathStats plugin has been disabled!");
+        instance = null;
     }
 
-    @Override
-    public boolean onCommand(@NotNull CommandSender sender, Command command, @NotNull String label, @NotNull String[] args) {
-        if (command.getName().equalsIgnoreCase("deathstats") || command.getName().equalsIgnoreCase("ds")) {
-            CommandHandler.DeathStatsCommandExecutor executor = new CommandHandler.DeathStatsCommandExecutor(this);
-            return executor.onCommand(sender, command, label, args);
-        }
-        return false;
+    public static Main getInstance() {
+        return instance;
     }
 }

@@ -14,7 +14,7 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.List;
 
-import static org.minecraft.tsunami.deathStats.util.MainUtil.getColorForRank;
+import static org.minecraft.tsunami.deathStats.util.UpdateChecker.getColorForRank;
 
 public class CommandHandler {
 
