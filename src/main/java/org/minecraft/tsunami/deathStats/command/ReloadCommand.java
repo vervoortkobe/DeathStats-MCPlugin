@@ -1,28 +1,32 @@
 package org.minecraft.tsunami.deathStats.command;
 
 import org.bukkit.command.CommandSender;
+import org.minecraft.tsunami.deathStats.Main; // Need Main instance
 import org.minecraft.tsunami.deathStats.config.ConfigManager;
 import org.minecraft.tsunami.deathStats.dao.DeathStatsDAO;
 import org.minecraft.tsunami.deathStats.manager.HealthDisplayManager;
-import org.minecraft.tsunami.deathStats.manager.ScoreboardHandler;
+import org.minecraft.tsunami.deathStats.manager.ScoreboardManager;
 
 public class ReloadCommand {
 
-    @SuppressWarnings("SameReturnValue")
-    public static boolean handleReloadCommand(ConfigManager configManager, ScoreboardHandler scoreboardHandler, HealthDisplayManager healthDisplayManager, CommandSender sender) {
-        if (!sender.hasPermission("deathstats.reload")) {
-            sender.sendMessage(configManager.getFormattedMessage("no-permission", ""));
+    // Pass all necessary components to the handler
+    public static boolean handleReloadCommand(Main plugin, ConfigManager configManager, DeathStatsDAO dao, ScoreboardManager scoreboardManager, HealthDisplayManager healthDisplayManager, CommandSender sender) {
+        if (!sender.hasPermission("deathstats.reload") && !sender.hasPermission("deathstats.admin")) {
+            sender.sendMessage(configManager.getFormattedMessage("no-permission", "&cNo permission."));
             return true;
         }
 
+        // 1. Reload config.yml
         configManager.loadConfig();
 
-        DeathStatsDAO.loadDeathStats();
+        // 2. Reload deaths.yml (optional)
+        // dao.loadDeathStats(); // Uncomment if manual edits to deaths.yml should be loaded
 
-        scoreboardHandler.reload();
+        // 3. Trigger reload logic in managers
+        scoreboardManager.reload();
         healthDisplayManager.reload();
 
-        sender.sendMessage(configManager.getFormattedMessage("reload", "&aConfiguration reloaded. Changes applied to online players."));
+        sender.sendMessage(configManager.getFormattedMessage("reload", "&aConfiguration reloaded."));
         return true;
     }
 }
