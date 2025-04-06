@@ -1,0 +1,75 @@
+prefix: "&c&l💀 DeathStats >&r "
+
+update-checker:
+  enabled: true
+  url: "https://raw.githubusercontent.com/vervoortkobe/DeathStats-MCPlugin/refs/heads/main/version.json" # <-- DO NOT CHANGE THIS
+
+# Death Leaderboard Scoreboard (Sidebar)
+scoreboard:
+  enabled: true
+  title: "&c&l☠ Top Deaths ☠"
+  # How many players to show on the scoreboard
+  entries: 5
+  # Format for each entry. Placeholders: {rank}, {rank_color}, {name}, {deaths}
+  entry-format: "{rank_color}{rank}. {rank_color}{name} &f(&c{deaths}&f)"
+  # How often to update the scoreboard (in seconds). Set to 0 or less to update only on death/join/toggle.
+  update-interval-seconds: 60
+
+# Health Display Options
+health-display:
+  # Display health in the player list (tab list)
+  tablist:
+    enabled: true
+    # Format. Placeholders: {name}, {health}, {max_health}, {health_color}
+    # {health_color} changes based on percentage (defined below)
+    format: "{name} {health_color}❤ {health}"
+    # How often to update tab list health (in seconds). High frequency can have minor performance impact.
+    update-interval-seconds: 3
+
+  # Display health below the player's name tag in the world
+  below-name:
+    enabled: true
+    # objective-display-name: "&c❤" # Often ignored by client
+
+  # Colors used for {health_color} based on health percentage
+  health-colors:
+    high: "&a"   # 67%+ health
+    medium: "&e" # 34%-66% health
+    low: "&c"    # 0%-33% health
+
+messages:
+  reload: "&aConfiguration reloaded. Changes to scoreboard/health displays applied to online players."
+  no-permission: "&cYou don't have permission to use this command."
+  player-only: "&cThis command can only be used by players."
+  invalid-subcommand: "&cUnknown subcommand. Use &e/{command} help &cfor help."
+  invalid-player: "&cPlayer '%player%' not found or has never played."
+  invalid-number: "&cInvalid number provided: '%input%'."
+  number-must-be-positive: "&cNumber must be zero or positive."
+  scoreboard-enabled: "&aDeath scoreboard enabled."
+  scoreboard-disabled: "&cDeath scoreboard disabled."
+  tabhealth-enabled: "&aTab list health display enabled."
+  tabhealth-disabled: "&cTab list health display disabled."
+  belownamehealth-enabled: "&aBelow-name health display enabled."
+  belownamehealth-disabled: "&cBelow-name health display disabled."
+  invalid-health-type: "&cInvalid health display type. Use 'tab' or 'belowname'."
+  config-set-error: "&cCould not update config value '%key%'."
+  help-header: "&6--- DeathStats Help ---"
+  help-line: "&e/{command} {subcommand} &7- {description}"
+  check-header: "&6--- Stats for %player% ---"
+  check-deaths: "&cDeaths: &f%deaths%"
+  check-rank: "&eRank: &f{rank_color}#%rank%"
+  set-success: "&aDeaths for %player% set to %deaths%."
+  set-usage: "&cUsage: /{command} set <player> <amount>"
+  reset-success: "&aDeaths for %player% reset to 0."
+  reset-usage: "&cUsage: /{command} reset <player>"
+  top-header: "&6--- Deaths Leaderboard (Top %limit%) ---"
+  top-entry: "{rank_color}{rank}. {rank_color}{name} &f- &c{deaths}"
+  top-no-stats: "&eNo death statistics available yet."
+  death-broadcast: "{prefix}&e{player} &fnow has &c{deaths} &fdeaths. Rank: {rank_color}#%rank% {rank_change_info}"
+  rank-up-message: "&a↑{old_rank} to {new_rank} (above {player_above_new})"
+  rank-down-message: "&c↓{old_rank} to {new_rank} (below {player_above_new})"
+  rank-new-entry-message: "&e(New Entry)"
+  rank-same-message: ""
+  rank-player-above-none: "Top"
+  update-available: "&eA new version of DeathStats (%latest_version%) is available! You are running %current_version%. Download: %download_url%"
+  update-check-failed: "&cCould not check for DeathStats updates."
