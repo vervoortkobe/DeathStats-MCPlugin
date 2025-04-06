@@ -8,6 +8,7 @@ import org.minecraft.tsunami.deathStats.manager.HealthDisplayManager;
 
 public class EnableHealthCommand {
 
+    @SuppressWarnings("SameReturnValue")
     public static boolean handleEnableHealthCommand(ConfigManager configManager, HealthDisplayManager healthManager, CommandSender sender, String type) {
         if (!sender.hasPermission("deathstats.health.enable") && !sender.hasPermission("deathstats.admin")) {
             sender.sendMessage(configManager.getFormattedMessage("no-permission", "&cNo permission."));

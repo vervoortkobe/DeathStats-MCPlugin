@@ -10,11 +10,10 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.minecraft.tsunami.deathStats.Main;
 import org.minecraft.tsunami.deathStats.config.ConfigManager;
-import org.minecraft.tsunami.deathStats.dao.DeathStatsDAO; // Need DAO for reload/set/reset
+import org.minecraft.tsunami.deathStats.dao.DeathStatsDAO;
 import org.minecraft.tsunami.deathStats.manager.HealthDisplayManager;
-import org.minecraft.tsunami.deathStats.manager.ScoreboardManager;
+import org.minecraft.tsunami.deathStats.manager.ScoreboardHandler;
 
-// Import static handlers from the SAME package
 import static org.minecraft.tsunami.deathStats.command.CheckCommand.handleCheckCommand;
 import static org.minecraft.tsunami.deathStats.command.DisableHealthCommand.handleDisableHealthCommand;
 import static org.minecraft.tsunami.deathStats.command.DisableScoreboardCommand.handleDisableScoreboardCommand;
@@ -36,15 +35,15 @@ public class BaseCommand implements CommandExecutor, TabCompleter {
 
     private final Main plugin;
     private final ConfigManager configManager;
-    private final ScoreboardManager scoreboardManager;
+    private final ScoreboardHandler scoreboardHandler;
     private final HealthDisplayManager healthDisplayManager;
     private final DeathStatsDAO dao; // Keep reference
 
 
-    public BaseCommand(Main plugin, ConfigManager configManager, ScoreboardManager scoreboardManager, HealthDisplayManager healthDisplayManager, DeathStatsDAO dao) {
+    public BaseCommand(Main plugin, ConfigManager configManager, ScoreboardHandler scoreboardHandler, HealthDisplayManager healthDisplayManager, DeathStatsDAO dao) {
         this.plugin = plugin;
         this.configManager = configManager;
-        this.scoreboardManager = scoreboardManager;
+        this.scoreboardHandler = scoreboardHandler;
         this.healthDisplayManager = healthDisplayManager;
         this.dao = dao;
     }
@@ -65,12 +64,12 @@ public class BaseCommand implements CommandExecutor, TabCompleter {
         return switch (subCommand) {
             case "help" -> handleHelpCommand(configManager, sender, label);
             case "check" -> handleCheckCommand(configManager, dao, sender, args); // Pass DAO
-            case "set" -> handleSetCommand(configManager, dao, scoreboardManager, sender, args); // Pass DAO & Scoreboard Manager
-            case "reset" -> handleResetCommand(configManager, dao, scoreboardManager, sender, args); // Pass DAO & Scoreboard Manager
+            case "set" -> handleSetCommand(configManager, dao, scoreboardHandler, sender, args); // Pass DAO & Scoreboard Manager
+            case "reset" -> handleResetCommand(configManager, dao, scoreboardHandler, sender, args); // Pass DAO & Scoreboard Manager
             case "top", "lb", "leaderboard", "list" -> handleTopCommand(configManager, dao, sender); // Pass DAO
             case "enable" -> handleEnableCommands(sender, args);
             case "disable" -> handleDisableCommands(sender, args);
-            case "reload" -> handleReloadCommand(plugin, configManager, dao, scoreboardManager, healthDisplayManager, sender);
+            case "reload" -> handleReloadCommand(plugin, configManager, dao, scoreboardHandler, healthDisplayManager, sender);
             default -> {
                 sender.sendMessage(configManager.getFormattedMessage("invalid-subcommand", "&cUnknown subcommand.", "command", label));
                 yield true;
@@ -86,7 +85,7 @@ public class BaseCommand implements CommandExecutor, TabCompleter {
         }
         String type = args[1].toLowerCase();
         return switch (type) {
-            case "scoreboard", "sb" -> handleEnableScoreboardCommand(configManager, scoreboardManager, sender);
+            case "scoreboard", "sb" -> handleEnableScoreboardCommand(configManager, scoreboardHandler, sender);
             case "tab", "tablist" -> handleEnableHealthCommand(configManager, healthDisplayManager, sender, "tab");
             case "belowname", "name", "healthbar" -> handleEnableHealthCommand(configManager, healthDisplayManager, sender, "belowname");
             default -> {
@@ -104,7 +103,7 @@ public class BaseCommand implements CommandExecutor, TabCompleter {
         }
         String type = args[1].toLowerCase();
         return switch (type) {
-            case "scoreboard", "sb" -> handleDisableScoreboardCommand(configManager, scoreboardManager, sender);
+            case "scoreboard", "sb" -> handleDisableScoreboardCommand(configManager, scoreboardHandler, sender);
             case "tab", "tablist" -> handleDisableHealthCommand(configManager, healthDisplayManager, sender, "tab");
             case "belowname", "name", "healthbar" -> handleDisableHealthCommand(configManager, healthDisplayManager, sender, "belowname");
             default -> {

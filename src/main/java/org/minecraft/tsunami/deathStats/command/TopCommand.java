@@ -13,6 +13,7 @@ import java.util.UUID;
 
 public class TopCommand {
 
+    @SuppressWarnings("SameReturnValue")
     public static boolean handleTopCommand(ConfigManager configManager, DeathStatsDAO dao, CommandSender sender) {
         if (!sender.hasPermission("deathstats.top") && !sender.hasPermission("deathstats.admin")) {
             sender.sendMessage(configManager.getFormattedMessage("no-permission", "&cNo permission."));

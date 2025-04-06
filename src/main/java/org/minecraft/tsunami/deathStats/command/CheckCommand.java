@@ -12,13 +12,13 @@ import java.util.UUID;
 
 public class CheckCommand {
 
+    @SuppressWarnings("SameReturnValue")
     public static boolean handleCheckCommand(ConfigManager configManager, DeathStatsDAO dao, CommandSender sender, String[] args) {
 
         OfflinePlayer targetPlayer;
-        String targetNameArg = null; // Store the name provided in args if applicable
+        String targetNameArg = null;
 
         if (args.length < 2) {
-            // Check self
             if (!(sender instanceof Player player)) {
                 sender.sendMessage(configManager.getFormattedMessage("player-only", "&cConsole usage: /ds check <player>"));
                 return true;
@@ -29,7 +29,6 @@ public class CheckCommand {
             }
             targetPlayer = player;
         } else {
-            // Check other
             if (!sender.hasPermission("deathstats.check.others") && !sender.hasPermission("deathstats.admin")) {
                 sender.sendMessage(configManager.getFormattedMessage("no-permission", "&cNo permission."));
                 return true;
@@ -45,14 +44,12 @@ public class CheckCommand {
         }
 
         UUID targetUUID = targetPlayer.getUniqueId();
-        // Prefer actual name, fallback to arg if name is null (can happen)
         String targetName = targetPlayer.getName() != null ? targetPlayer.getName() : (targetNameArg != null ? targetNameArg : "Unknown");
 
-        int deaths = dao.getPlayerDeaths(targetUUID); // Use dao instance
+        int deaths = dao.getPlayerDeaths(targetUUID);
         int rank = PlayerUtil.getPlayerRank(targetUUID);
         String rankColorStr = PlayerUtil.getColorForRank(rank);
 
-        // Send messages using ConfigManager
         sender.sendMessage(configManager.getFormattedMessage("check-header", "&6--- Stats for %player% ---", "player", targetName));
         sender.sendMessage(configManager.getFormattedMessageNoPrefix("check-deaths", "&cDeaths: &f%deaths%", "deaths", String.valueOf(deaths)));
         sender.sendMessage(configManager.getFormattedMessageNoPrefix("check-rank", "&eRank: &f{rank_color}#%rank%", "rank", String.valueOf(rank), "rank_color", rankColorStr));

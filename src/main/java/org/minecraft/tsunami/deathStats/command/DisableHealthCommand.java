@@ -1,13 +1,12 @@
 package org.minecraft.tsunami.deathStats.command;
 
-import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
-import org.bukkit.entity.Player;
 import org.minecraft.tsunami.deathStats.config.ConfigManager;
 import org.minecraft.tsunami.deathStats.manager.HealthDisplayManager;
 
 public class DisableHealthCommand {
 
+    @SuppressWarnings("SameReturnValue")
     public static boolean handleDisableHealthCommand(ConfigManager configManager, HealthDisplayManager healthManager, CommandSender sender, String type) {
         if (!sender.hasPermission("deathstats.health.disable") && !sender.hasPermission("deathstats.admin")) {
             sender.sendMessage(configManager.getFormattedMessage("no-permission", "&cNo permission."));

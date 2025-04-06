@@ -5,13 +5,14 @@ import org.bukkit.OfflinePlayer;
 import org.bukkit.command.CommandSender;
 import org.minecraft.tsunami.deathStats.config.ConfigManager;
 import org.minecraft.tsunami.deathStats.dao.DeathStatsDAO;
-import org.minecraft.tsunami.deathStats.manager.ScoreboardManager; // Need to update scoreboard
+import org.minecraft.tsunami.deathStats.manager.ScoreboardHandler;
 
 import java.util.UUID;
 
 public class SetCommand {
 
-    public static boolean handleSetCommand(ConfigManager configManager, DeathStatsDAO dao, ScoreboardManager scoreboardManager, CommandSender sender, String[] args) {
+    @SuppressWarnings("SameReturnValue")
+    public static boolean handleSetCommand(ConfigManager configManager, DeathStatsDAO dao, ScoreboardHandler scoreboardHandler, CommandSender sender, String[] args) {
         if (!sender.hasPermission("deathstats.set") && !sender.hasPermission("deathstats.admin")) {
             sender.sendMessage(configManager.getFormattedMessage("no-permission", "&cNo permission."));
             return true;
@@ -46,7 +47,7 @@ public class SetCommand {
         String actualName = targetPlayer.getName() != null ? targetPlayer.getName() : targetName;
 
         dao.setPlayerDeaths(targetUUID, amount); // Use DAO method (saves internally)
-        scoreboardManager.updateScoreboard(); // Update scoreboard after change
+        scoreboardHandler.updateScoreboard(); // Update scoreboard after change
 
         sender.sendMessage(configManager.getFormattedMessage("set-success", "&aDeaths set.", "player", actualName, "deaths", String.valueOf(amount)));
         return true;

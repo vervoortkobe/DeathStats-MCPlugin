@@ -5,6 +5,8 @@ import org.bukkit.configuration.file.FileConfiguration;
 import org.minecraft.tsunami.deathStats.Main;
 
 import java.io.File;
+import java.io.IOException;
+import java.util.logging.Level;
 
 import static org.minecraft.tsunami.deathStats.util.MessageUtil.getString;
 
@@ -28,6 +30,17 @@ public class ConfigManager {
         this.config = plugin.getConfig();
         this.prefix = getMessage("prefix", "&c&l💀 DeathStats >&r ");
         plugin.getLogger().info("Configuration loaded.");
+    }
+
+    public boolean saveBooleanSetting(String path, boolean value) {
+        config.set(path, value);
+        try {
+            config.save(configFile);
+            return true;
+        } catch (IOException e) {
+            plugin.getLogger().log(Level.SEVERE, "Could not save config.yml!", e);
+            return false;
+        }
     }
 
     public String getPrefix() {

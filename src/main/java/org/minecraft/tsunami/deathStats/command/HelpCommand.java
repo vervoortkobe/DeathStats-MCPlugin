@@ -8,8 +8,8 @@ import java.util.Map;
 
 public class HelpCommand {
 
+    @SuppressWarnings("SameReturnValue")
     public static boolean handleHelpCommand(ConfigManager configManager, CommandSender sender, String label) {
-        // Use LinkedHashMap to maintain insertion order for help message
         Map<String, String> commands = new LinkedHashMap<>();
         commands.put("help", "Show this help message");
         commands.put("check [player]", "Display death stats (yours or others)");
