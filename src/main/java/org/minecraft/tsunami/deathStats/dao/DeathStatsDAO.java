@@ -1,6 +1,6 @@
 package org.minecraft.tsunami.deathStats.dao;
 
-import org.bukkit.configuration.ConfigurationSection; // Import ConfigurationSection
+import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.YamlConfiguration;
 
 import java.io.File;
@@ -9,36 +9,30 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 import java.util.logging.Level;
-import java.util.logging.Logger; // Use specific logger
+import java.util.logging.Logger;
 
 public class DeathStatsDAO {
 
     private static File deathStatsFile;
     private static YamlConfiguration deathConfig;
-    private static Logger logger; // Store logger instance
+    private static Logger logger;
 
-    // Only store player deaths here. Other settings are in config.yml via ConfigManager
     public static Map<UUID, Integer> playerDeaths = new HashMap<>();
 
     public static void initialize(File pluginFolder, Logger pluginLogger) {
-        logger = pluginLogger; // Get logger from Main
+        logger = pluginLogger;
         deathStatsFile = new File(pluginFolder, "deaths.yml");
 
         if (!deathStatsFile.exists()) {
             logger.info("deaths.yml not found, creating a new one...");
             try {
-                // Create parent directories if they don't exist
                 deathStatsFile.getParentFile().mkdirs();
-                // Create the file itself
                 deathStatsFile.createNewFile();
-                // Load the newly created empty file
                 deathConfig = YamlConfiguration.loadConfiguration(deathStatsFile);
-                // Optional: Save an empty 'deaths' section to initialize structure
                 deathConfig.createSection("deaths");
                 saveConfig();
             } catch (IOException e) {
                 logger.log(Level.SEVERE, "Could not create deaths.yml!", e);
-                // Handle error appropriately, maybe disable parts of the plugin
                 return;
             }
         } else {
@@ -48,25 +42,21 @@ public class DeathStatsDAO {
         loadDeathStats();
     }
 
-    // Renamed for clarity - only saves death counts
     public static void savePlayerDeaths() {
         if (deathConfig == null) {
             logger.warning("Attempted to save player deaths but deathConfig is null (maybe initialization failed?).");
             return;
         }
-        // Clear existing death data before saving current map
-        deathConfig.set("deaths", null); // Remove the whole section first
-        ConfigurationSection deathsSection = deathConfig.createSection("deaths"); // Recreate it
+        deathConfig.set("deaths", null);
+        ConfigurationSection deathsSection = deathConfig.createSection("deaths");
 
         for (Map.Entry<UUID, Integer> entry : playerDeaths.entrySet()) {
-            // Use the ConfigurationSection to set values
             deathsSection.set(entry.getKey().toString(), entry.getValue());
         }
         saveConfig();
-        // logger.info("Saved " + playerDeaths.size() + " player death records."); // Optional: Verbose logging
+        logger.info("Saved " + playerDeaths.size() + " player death records.");
     }
 
-    // Renamed for clarity - only loads death counts
     public static void loadDeathStats() {
         playerDeaths.clear();
         if (deathConfig == null) {
@@ -89,16 +79,14 @@ public class DeathStatsDAO {
         logger.info("Loaded " + playerDeaths.size() + " player death records.");
     }
 
-    // Add/Update a single player's death count
     public static void incrementPlayerDeaths(UUID playerId) {
         int currentDeaths = playerDeaths.getOrDefault(playerId, 0);
         playerDeaths.put(playerId, currentDeaths + 1);
-        // Consider saving immediately or batching saves
-        savePlayerDeaths(); // Save after each death for data safety
+        savePlayerDeaths();
     }
 
     public static void setPlayerDeaths(UUID playerId, int deaths) {
-        if (deaths < 0) deaths = 0; // Ensure non-negative
+        if (deaths < 0) deaths = 0;
         playerDeaths.put(playerId, deaths);
         savePlayerDeaths();
     }
@@ -125,8 +113,7 @@ public class DeathStatsDAO {
         }
     }
 
-    // --- Getters for direct access ---
     public static Map<UUID, Integer> getAllPlayerDeaths() {
-        return playerDeaths; // Return reference (modify with caution) or copy if needed
+        return playerDeaths;
     }
 }

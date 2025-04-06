@@ -1,15 +1,10 @@
 package org.minecraft.tsunami.deathStats.config;
 
 import org.bukkit.ChatColor;
-import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.minecraft.tsunami.deathStats.Main;
 
 import java.io.File;
-import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.logging.Level;
 
 import static org.minecraft.tsunami.deathStats.util.MessageUtil.getString;
 
@@ -17,8 +12,8 @@ public class ConfigManager {
 
     private final Main plugin;
     private FileConfiguration config;
-    private File configFile;
-    private String prefix; // Cache prefix
+    private final File configFile;
+    private String prefix;
 
     public ConfigManager(Main plugin) {
         this.plugin = plugin;
@@ -29,32 +24,16 @@ public class ConfigManager {
         if (!configFile.exists()) {
             plugin.saveDefaultConfig();
         }
-        plugin.reloadConfig(); // Reloads from disk
+        plugin.reloadConfig();
         this.config = plugin.getConfig();
-        this.prefix = getMessage("prefix", "&c&l💀 DeathStats >&r "); // Load and cache prefix
+        this.prefix = getMessage("prefix", "&c&l💀 DeathStats >&r ");
         plugin.getLogger().info("Configuration loaded.");
     }
-
-    // Method to save specific boolean settings back to config (for enable/disable commands)
-    public boolean saveBooleanSetting(String path, boolean value) {
-        config.set(path, value);
-        try {
-            config.save(configFile);
-            // No need to reload here unless other parts depend on immediate config object update
-            return true;
-        } catch (IOException e) {
-            plugin.getLogger().log(Level.SEVERE, "Could not save config.yml!", e);
-            return false;
-        }
-    }
-
-    // --- Getters ---
 
     public String getPrefix() {
         return prefix;
     }
 
-    // Update Checker
     public boolean isUpdateCheckEnabled() {
         return config.getBoolean("update-checker.enabled", true);
     }
@@ -63,7 +42,6 @@ public class ConfigManager {
         return config.getString("update-checker.url", "");
     }
 
-    // Scoreboard
     public boolean isScoreboardEnabled() {
         return config.getBoolean("scoreboard.enabled", true);
     }
@@ -84,7 +62,6 @@ public class ConfigManager {
         return config.getInt("scoreboard.update-interval-seconds", 60);
     }
 
-    // Health Display
     public boolean isTabHealthEnabled() {
         return config.getBoolean("health-display.tablist.enabled", true);
     }
@@ -102,7 +79,6 @@ public class ConfigManager {
         return config.getBoolean("health-display.below-name.enabled", true);
     }
 
-    // Health Colors
     public String getHealthColorHigh() {
         return ChatColor.translateAlternateColorCodes('&', config.getString("health-display.health-colors.high", "&a"));
     }
@@ -115,27 +91,23 @@ public class ConfigManager {
         return ChatColor.translateAlternateColorCodes('&', config.getString("health-display.health-colors.low", "&c"));
     }
 
-    // Messages
     public String getMessage(String key, String defaultValue) {
         String message = config.getString("messages." + key, defaultValue);
         return ChatColor.translateAlternateColorCodes('&', message);
     }
 
     public String getRawMessage(String key, String defaultValue) {
-        // Gets message without color codes or prefix
         return config.getString("messages." + key, defaultValue);
     }
 
-    // Helper for formatted messages (no prefix)
     public String getFormattedMessageNoPrefix(String key, String defaultValue, String... replacements) {
         String message = getMessage(key, defaultValue);
         return replacePlaceholders(message, replacements);
     }
 
-    // Helper for formatted messages (WITH prefix)
     public String getFormattedMessage(String key, String defaultValue, String... replacements) {
         String message = getMessage(key, defaultValue);
-        return prefix + replacePlaceholders(message, replacements); // Add prefix here
+        return prefix + replacePlaceholders(message, replacements);
     }
 
     private String replacePlaceholders(String message, String... replacements) {

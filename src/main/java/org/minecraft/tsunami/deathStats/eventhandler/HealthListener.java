@@ -19,33 +19,27 @@ public class HealthListener implements Listener {
         this.healthDisplayManager = healthDisplayManager;
     }
 
-    // Update on respawn (health is full)
-    @EventHandler(priority = EventPriority.MONITOR) // Run after other plugins might modify health
+    @EventHandler(priority = EventPriority.MONITOR)
     public void onRespawn(PlayerRespawnEvent event) {
-        // Delay slightly to ensure health attributes are updated
         Main.getInstance().getServer().getScheduler().runTaskLater(Main.getInstance(), () -> {
             healthDisplayManager.updateTabHealth(event.getPlayer());
-        }, 1L); // 1 tick delay
+        }, 1L);
     }
 
-    // Update on health regain
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onRegainHealth(EntityRegainHealthEvent event) {
         if (event.getEntityType() == EntityType.PLAYER) {
             Player player = (Player) event.getEntity();
-            // Update async or sync depending on performance needs
             Main.getInstance().getServer().getScheduler().runTaskAsynchronously(Main.getInstance(), () -> {
                  healthDisplayManager.updateTabHealth(player);
              });
         }
     }
 
-    // Update on damage
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onDamage(EntityDamageEvent event) {
         if (event.getEntityType() == EntityType.PLAYER) {
             Player player = (Player) event.getEntity();
-             // Delay slightly for health to apply? Maybe not needed.
              Main.getInstance().getServer().getScheduler().runTaskAsynchronously(Main.getInstance(), () -> {
                  healthDisplayManager.updateTabHealth(player);
              });

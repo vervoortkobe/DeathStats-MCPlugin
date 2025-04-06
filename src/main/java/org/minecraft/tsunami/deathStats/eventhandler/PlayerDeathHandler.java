@@ -1,9 +1,6 @@
-// src/main/java/.../eventhandler/PlayerDeathHandler.java
 package org.minecraft.tsunami.deathStats.eventhandler;
 
 import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
-import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -21,8 +18,6 @@ public class PlayerDeathHandler implements Listener {
 
     private final ConfigManager configManager;
     private final ScoreboardHandler scoreboardHandler;
-    // HealthDisplayManager might be needed if you want immediate updates on death,
-    // but the respawn event might be better for tab list.
 
     public PlayerDeathHandler(ConfigManager configManager, ScoreboardHandler scoreboardHandler) {
         this.configManager = configManager;
@@ -34,56 +29,49 @@ public class PlayerDeathHandler implements Listener {
         Player player = event.getEntity();
         UUID playerId = player.getUniqueId();
 
-        // Get data BEFORE incrementing deaths
         int oldDeaths = DeathStatsDAO.getPlayerDeaths(playerId);
         List<Map.Entry<UUID, Integer>> sortedListBefore = PlayerUtil.getSortedDeathEntries();
-        int oldRank = PlayerUtil.getPlayerRank(playerId); // Rank before death
+        int oldRank = PlayerUtil.getPlayerRank(playerId);
         String playerAboveOldName = PlayerUtil.getPlayerNameAboveRank(oldRank, sortedListBefore);
-        if (playerAboveOldName == null) playerAboveOldName = configManager.getRawMessage("rank-player-above-none", "Top");
+        if (playerAboveOldName == null) configManager.getRawMessage("rank-player-above-none", "Top");
 
+        DeathStatsDAO.incrementPlayerDeaths(playerId);
 
-        // Increment and Save Death
-        DeathStatsDAO.incrementPlayerDeaths(playerId); // This now saves internally
-
-        // Get data AFTER incrementing deaths
-        int newDeaths = DeathStatsDAO.getPlayerDeaths(playerId); // Should be oldDeaths + 1
-        List<Map.Entry<UUID, Integer>> sortedListAfter = PlayerUtil.getSortedDeathEntries(); // Re-fetch sorted list after update
-        int newRank = PlayerUtil.getPlayerRank(playerId); // Rank after death
+        int newDeaths = DeathStatsDAO.getPlayerDeaths(playerId);
+        List<Map.Entry<UUID, Integer>> sortedListAfter = PlayerUtil.getSortedDeathEntries();
+        int newRank = PlayerUtil.getPlayerRank(playerId);
         String playerAboveNewName = PlayerUtil.getPlayerNameAboveRank(newRank, sortedListAfter);
         if (playerAboveNewName == null) playerAboveNewName = configManager.getRawMessage("rank-player-above-none", "Top");
 
-
-        // --- Broadcast Logic ---
         String rankChangeInfo = "";
-        if (oldDeaths == 0 && newDeaths > 0) { // First death recorded
+        if (oldDeaths == 0 && newDeaths > 0) {
             rankChangeInfo = configManager.getFormattedMessageNoPrefix("rank-new-entry-message", "&e(New Entry)");
-        } else if (newRank < oldRank) { // Rank Up
+        } else if (newRank < oldRank) {
             rankChangeInfo = configManager.getFormattedMessageNoPrefix("rank-up-message", "&a↑{old_rank} to {new_rank} (above {player_above_new})",
                     "old_rank", String.valueOf(oldRank),
                     "new_rank", String.valueOf(newRank),
                     "player_above_new", playerAboveNewName);
-        } else if (newRank > oldRank) { // Rank Down
+        } else if (newRank > oldRank) {
             rankChangeInfo = configManager.getFormattedMessageNoPrefix("rank-down-message", "&c↓{old_rank} to {new_rank} (below {player_above_new})",
                     "old_rank", String.valueOf(oldRank),
                     "new_rank", String.valueOf(newRank),
                     "player_above_new", playerAboveNewName);
-        } else { // Rank Same
-            rankChangeInfo = configManager.getFormattedMessageNoPrefix("rank-same-message", ""); // Default empty if no change msg needed
+        } else {
+            rankChangeInfo = configManager.getFormattedMessageNoPrefix("rank-same-message", "");
         }
 
         String rankColorStr = PlayerUtil.getColorForRank(newRank);
-        String broadcastMessage = configManager.getFormattedMessageNoPrefix("death-broadcast", // Use non-prefixed version
+        String broadcastMessage = configManager.getFormattedMessageNoPrefix("death-broadcast",
                 "{prefix}&e{player} &fnow has &c{deaths} &fdeaths. Rank: {rank_color}#%rank% {rank_change_info}",
-                "prefix", configManager.getPrefix(), // Manually add prefix placeholder if needed in message
+                "prefix", configManager.getPrefix(),
                 "player", player.getName(),
                 "deaths", String.valueOf(newDeaths),
                 "rank", String.valueOf(newRank),
-                "rank_color", rankColorStr, // Pass color code string
-                "rank_change_info", rankChangeInfo.trim()); // Pass the generated change info
+                "rank_color", rankColorStr,
+                "rank_change_info", rankChangeInfo.trim());
 
         Bukkit.broadcastMessage(broadcastMessage);
 
-        // Update Scoreboard
-        scoreboardHandler.updateScoreboard(); // Update immediately after death
+        scoreboardHandler.updateScoreboard();
     }
 }

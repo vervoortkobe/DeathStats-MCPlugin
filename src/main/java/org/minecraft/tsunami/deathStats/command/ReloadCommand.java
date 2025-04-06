@@ -8,6 +8,7 @@ import org.minecraft.tsunami.deathStats.manager.ScoreboardHandler;
 
 public class ReloadCommand {
 
+    @SuppressWarnings("SameReturnValue")
     public static boolean handleReloadCommand(ConfigManager configManager, ScoreboardHandler scoreboardHandler, HealthDisplayManager healthDisplayManager, CommandSender sender) {
         if (!sender.hasPermission("deathstats.reload")) {
             sender.sendMessage(configManager.getFormattedMessage("no-permission", ""));

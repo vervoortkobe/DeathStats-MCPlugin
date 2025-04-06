@@ -6,17 +6,14 @@ import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitTask;
-import org.bukkit.scoreboard.DisplaySlot;
-import org.bukkit.scoreboard.Objective;
-import org.bukkit.scoreboard.Score;
-import org.bukkit.scoreboard.Scoreboard;
+import org.bukkit.scoreboard.*;
 import org.minecraft.tsunami.deathStats.Main;
 import org.minecraft.tsunami.deathStats.config.ConfigManager;
 import org.minecraft.tsunami.deathStats.util.PlayerUtil;
-import org.bukkit.scoreboard.ScoreboardManager;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.UUID;
 
 public class ScoreboardHandler {
@@ -116,7 +113,7 @@ public class ScoreboardHandler {
             player.setScoreboard(scoreboard);
         } else {
             if (player.getScoreboard() == scoreboard) {
-                player.setScoreboard(Bukkit.getScoreboardManager().getMainScoreboard());
+                player.setScoreboard(Objects.requireNonNull(Bukkit.getScoreboardManager()).getMainScoreboard());
             }
         }
     }
