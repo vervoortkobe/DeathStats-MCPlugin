@@ -1,43 +1,67 @@
 name: DeathStats
-version: '1.0'
+version: '1.3'
 main: org.minecraft.tsunami.deathStats.Main
-api-version: '1.21'
-description: Track and display player deaths
+api-version: '1.17' # Minimum supported version
+author: Tsunami
+description: A plugin that lets you follow up on player's death statistics with simple leaderboard and sidebar.
 
 commands:
   deathstats:
-    description: Manage death statistics
-    usage: |
-      /deathstats help - Show help information
-      /deathstats check <player> - Check a player's death statistics
-      /deathstats set <player> - Set deaths for a specific player
-      /deathstats reset <player> - Reset deaths for a specific player
-      /deathstats top - Show the death statistics leaderboard
-      /deathstats toggle - Toggle death statistics scoreboard
+    description: Base command for DeathStats.
+    usage: /<command> help
     aliases: [ds]
     permission: deathstats.use
 
 permissions:
   deathstats.use:
-    description: Allows using DeathStats commands
+    description: Allows using any DeathStats command (if sub-permissions aren't met).
     default: true
-
+  deathstats.help:
+    description: Allows using /ds help.
+    default: true
   deathstats.check:
-    description: Allows checking player death statistics
-    default: op
-
-  deathstats.set:
-    description: Allows setting a player's deaths
-    default: op
-
-  deathstats.reset:
-    description: Allows resetting a player's deaths
-    default: op
-
-  deathstats.top:
-    description: Allows seeing the death statistics leaderboard
+    description: Allows checking player death statistics (/ds check [player]).
     default: true
-
-  deathstats.toggle:
-    description: Allows seeing the death statistics leaderboard
+  deathstats.check.others:
+    description: Allows checking other players' death statistics (/ds check <player>).
     default: op
+  deathstats.set:
+    description: Allows setting a player's deaths (/ds set <player> <amount>).
+    default: op
+  deathstats.reset:
+    description: Allows resetting a player's deaths (/ds reset <player>).
+    default: op
+  deathstats.top:
+    description: Allows seeing the death statistics leaderboard (/ds top).
+    default: true
+  deathstats.scoreboard.enable:
+    description: Allows enabling the death scoreboard (/ds enable scoreboard).
+    default: op
+  deathstats.scoreboard.disable:
+    description: Allows disabling the death scoreboard (/ds disable scoreboard).
+    default: op
+  deathstats.health.enable:
+    description: Allows enabling health displays (/ds enable <tab|belowname>).
+    default: op
+  deathstats.health.disable:
+    description: Allows disabling health displays (/ds disable <tab|belowname>).
+    default: op
+  deathstats.reload:
+    description: Allows reloading the plugin configuration (/ds reload).
+    default: op
+  deathstats.admin:
+    description: Grants all DeathStats permissions.
+    default: op
+    children:
+      deathstats.use: true
+      deathstats.help: true
+      deathstats.check: true
+      deathstats.check.others: true
+      deathstats.set: true
+      deathstats.reset: true
+      deathstats.top: true
+      deathstats.scoreboard.enable: true
+      deathstats.scoreboard.disable: true
+      deathstats.health.enable: true
+      deathstats.health.disable: true
+      deathstats.reload: true

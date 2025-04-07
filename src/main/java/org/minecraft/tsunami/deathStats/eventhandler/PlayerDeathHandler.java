@@ -1,13 +1,14 @@
 package org.minecraft.tsunami.deathStats.eventhandler;
 
 import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.PlayerDeathEvent;
+import org.minecraft.tsunami.deathStats.config.ConfigManager;
 import org.minecraft.tsunami.deathStats.dao.DeathStatsDAO;
-import org.minecraft.tsunami.deathStats.scoreboard.ScoreBoardHandler;
+import org.minecraft.tsunami.deathStats.manager.ScoreboardHandler;
+import org.minecraft.tsunami.deathStats.util.PlayerUtil;
 
 import java.util.List;
 import java.util.Map;
@@ -15,83 +16,62 @@ import java.util.UUID;
 
 public class PlayerDeathHandler implements Listener {
 
+    private final ConfigManager configManager;
+    private final ScoreboardHandler scoreboardHandler;
+
+    public PlayerDeathHandler(ConfigManager configManager, ScoreboardHandler scoreboardHandler) {
+        this.configManager = configManager;
+        this.scoreboardHandler = scoreboardHandler;
+    }
+
     @EventHandler
     public void onPlayerDeath(PlayerDeathEvent event) {
         Player player = event.getEntity();
         UUID playerId = player.getUniqueId();
 
-        int oldDeaths = DeathStatsDAO.playerDeaths.getOrDefault(playerId, 0);
-        int oldRank = getPlayerRank(playerId);
-        String playerAbove = getPlayerAbove(oldRank);
+        int oldDeaths = DeathStatsDAO.getPlayerDeaths(playerId);
+        List<Map.Entry<UUID, Integer>> sortedListBefore = PlayerUtil.getSortedDeathEntries();
+        int oldRank = PlayerUtil.getPlayerRank(playerId);
+        String playerAboveOldName = PlayerUtil.getPlayerNameAboveRank(oldRank, sortedListBefore);
+        if (playerAboveOldName == null) configManager.getRawMessage("rank-player-above-none", "Top");
 
-        int newDeaths = oldDeaths + 1;
-        DeathStatsDAO.playerDeaths.put(playerId, newDeaths);
+        DeathStatsDAO.incrementPlayerDeaths(playerId);
 
-        int newRank = getPlayerRank(playerId);
-        String newPlayerAbove = getPlayerAbove(newRank);
+        int newDeaths = DeathStatsDAO.getPlayerDeaths(playerId);
+        List<Map.Entry<UUID, Integer>> sortedListAfter = PlayerUtil.getSortedDeathEntries();
+        int newRank = PlayerUtil.getPlayerRank(playerId);
+        String playerAboveNewName = PlayerUtil.getPlayerNameAboveRank(newRank, sortedListAfter);
+        if (playerAboveNewName == null) playerAboveNewName = configManager.getRawMessage("rank-player-above-none", "Top");
 
-        String deathWord = newDeaths == 1 ? "death" : "deaths";
-        String message = ChatColor.YELLOW + player.getName() + ChatColor.WHITE + " now has " +
-                ChatColor.RED + newDeaths + ChatColor.WHITE + " " + deathWord + ".";
-
-        if (newRank < oldRank) {
-            message += "\n" + ChatColor.GREEN + "They went up in the leaderboard from place " +
-                    ChatColor.YELLOW + oldRank + ChatColor.GREEN + " (under " + ChatColor.YELLOW + playerAbove +
-                    ChatColor.GREEN + ") to " + ChatColor.YELLOW + newRank;
-            if (newRank == 1) {
-                message += ChatColor.GREEN + " (on top)!";
-            } else {
-                message += ChatColor.GREEN + " (under " + ChatColor.YELLOW + newPlayerAbove + ChatColor.GREEN + ").";
-            }
-        } else if (newRank == oldRank) {
-            if (oldDeaths == 0) {
-                message += "\n" + ChatColor.YELLOW + "They've entered the leaderboard at place " + newRank;
-            } else {
-                message += "\n" + ChatColor.YELLOW + "They've increased their death count but stay at place " + newRank;
-            }
-            if (newRank > 1) {
-                message += " (under " + ChatColor.YELLOW + newPlayerAbove + ChatColor.YELLOW + ").";
-            } else {
-                message += " (on top).";
-            }
+        String rankChangeInfo = "";
+        if (oldDeaths == 0 && newDeaths > 0) {
+            rankChangeInfo = configManager.getFormattedMessageNoPrefix("rank-new-entry-message", "&e(New Entry)");
+        } else if (newRank < oldRank) {
+            rankChangeInfo = configManager.getFormattedMessageNoPrefix("rank-up-message", "&a↑{old_rank} to {new_rank} (above {player_above_new})",
+                    "old_rank", String.valueOf(oldRank),
+                    "new_rank", String.valueOf(newRank),
+                    "player_above_new", playerAboveNewName);
+        } else if (newRank > oldRank) {
+            rankChangeInfo = configManager.getFormattedMessageNoPrefix("rank-down-message", "&c↓{old_rank} to {new_rank} (below {player_above_new})",
+                    "old_rank", String.valueOf(oldRank),
+                    "new_rank", String.valueOf(newRank),
+                    "player_above_new", playerAboveNewName);
         } else {
-            message += "\n" + ChatColor.RED + "They've dropped to place " + newRank + " on the leaderboard";
-            if (newRank > 1) {
-                message += " (under " + ChatColor.YELLOW + newPlayerAbove + ChatColor.RED + ").";
-            }
+            rankChangeInfo = configManager.getFormattedMessageNoPrefix("rank-same-message", "");
         }
 
-        Bukkit.broadcastMessage(message);
+        String rankColorStr = PlayerUtil.getColorForRank(newRank);
+        String broadcastMessage = configManager.getFormattedMessageNoPrefix("death-broadcast",
+                "{prefix}&e{player} &fnow has &c{deaths} &fdeaths. Rank: {rank_color}#%rank% {rank_change_info}",
+                "prefix", configManager.getPrefix(),
+                "player", player.getName(),
+                "deaths", String.valueOf(newDeaths),
+                "rank", String.valueOf(newRank),
+                "rank_color", rankColorStr,
+                "rank_change_info", rankChangeInfo.trim());
 
-        DeathStatsDAO.saveDeathStats();
+        Bukkit.broadcastMessage(broadcastMessage);
 
-        if (DeathStatsDAO.scoreboardEnabled) {
-            ScoreBoardHandler.updateScoreboard();
-        }
-    }
-
-
-    private int getPlayerRank(UUID playerId) {
-        List<Map.Entry<UUID, Integer>> sortedEntries = DeathStatsDAO.playerDeaths.entrySet().stream()
-                .sorted(Map.Entry.<UUID, Integer>comparingByValue().reversed())
-                .toList();
-
-        for (int i = 0; i < sortedEntries.size(); i++) {
-            if (sortedEntries.get(i).getKey().equals(playerId)) {
-                return i + 1;
-            }
-        }
-        return sortedEntries.size() + 1;
-    }
-
-    private String getPlayerAbove(int rank) {
-        List<Map.Entry<UUID, Integer>> sortedEntries = DeathStatsDAO.playerDeaths.entrySet().stream()
-                .sorted(Map.Entry.<UUID, Integer>comparingByValue().reversed())
-                .toList();
-
-        if (rank <= 1 || rank > sortedEntries.size()) return "None";
-
-        UUID playerAboveId = sortedEntries.get(rank - 2).getKey();
-        return Bukkit.getOfflinePlayer(playerAboveId).getName();
+        scoreboardHandler.updateScoreboard();
     }
 }
