@@ -13,12 +13,10 @@ public class DisableScoreboardCommand {
             return true;
         }
 
-        // Update config first
         boolean success = configManager.saveBooleanSetting("scoreboard.enabled", false);
 
         if (success) {
-            // Apply change via manager
-            scoreboardHandler.reload(); // Reload handles removing from players
+            scoreboardHandler.reload();
             sender.sendMessage(configManager.getFormattedMessage("scoreboard-disabled", "&cScoreboard disabled."));
         } else {
             sender.sendMessage(configManager.getFormattedMessage("config-set-error", "&cFailed to save setting.", "key", "scoreboard.enabled"));

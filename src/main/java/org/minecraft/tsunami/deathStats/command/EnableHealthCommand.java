@@ -1,8 +1,6 @@
 package org.minecraft.tsunami.deathStats.command;
 
-import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
-import org.bukkit.entity.Player;
 import org.minecraft.tsunami.deathStats.config.ConfigManager;
 import org.minecraft.tsunami.deathStats.manager.HealthDisplayManager;
 
@@ -15,9 +13,9 @@ public class EnableHealthCommand {
             return true;
         }
 
-        boolean success = false;
-        String messageKey = "";
-        String configPath = "";
+        boolean success;
+        String messageKey;
+        String configPath;
 
         if ("tab".equals(type)) {
             configPath = "health-display.tablist.enabled";
@@ -28,13 +26,11 @@ public class EnableHealthCommand {
             success = configManager.saveBooleanSetting(configPath, true);
             messageKey = "belownamehealth-enabled";
         } else {
-            // Should be caught by BaseCommand, but safety check
             sender.sendMessage(configManager.getFormattedMessage("invalid-health-type", "&cInvalid type."));
             return true;
         }
 
         if (success) {
-            // Apply change via manager's reload logic
             healthManager.reload();
             sender.sendMessage(configManager.getFormattedMessage(messageKey, "&aHealth display enabled."));
         } else {

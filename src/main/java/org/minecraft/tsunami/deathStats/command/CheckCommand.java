@@ -13,7 +13,7 @@ import java.util.UUID;
 public class CheckCommand {
 
     @SuppressWarnings("SameReturnValue")
-    public static boolean handleCheckCommand(ConfigManager configManager, DeathStatsDAO dao, CommandSender sender, String[] args) {
+    public static boolean handleCheckCommand(ConfigManager configManager, CommandSender sender, String[] args) {
 
         OfflinePlayer targetPlayer;
         String targetNameArg = null;
@@ -44,9 +44,9 @@ public class CheckCommand {
         }
 
         UUID targetUUID = targetPlayer.getUniqueId();
-        String targetName = targetPlayer.getName() != null ? targetPlayer.getName() : (targetNameArg != null ? targetNameArg : "Unknown");
+        String targetName = targetPlayer.getName() != null ? targetPlayer.getName() : targetNameArg;
 
-        int deaths = dao.getPlayerDeaths(targetUUID);
+        int deaths = DeathStatsDAO.getPlayerDeaths(targetUUID);
         int rank = PlayerUtil.getPlayerRank(targetUUID);
         String rankColorStr = PlayerUtil.getColorForRank(rank);
 

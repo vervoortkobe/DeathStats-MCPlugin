@@ -41,7 +41,7 @@ public final class Main extends JavaPlugin {
 
 
         try {
-            BaseCommand baseCommand = new BaseCommand(this, configManager, scoreboardHandler, healthDisplayManager);
+            BaseCommand baseCommand = new BaseCommand(configManager, scoreboardHandler, healthDisplayManager);
             Objects.requireNonNull(getCommand("deathstats"), "Command 'deathstats' not found in plugin.yml!")
                     .setExecutor(baseCommand);
             Objects.requireNonNull(getCommand("deathstats"), "Command 'deathstats' not found in plugin.yml!")

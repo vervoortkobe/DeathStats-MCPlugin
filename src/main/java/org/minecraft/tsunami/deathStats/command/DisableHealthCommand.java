@@ -13,9 +13,9 @@ public class DisableHealthCommand {
             return true;
         }
 
-        boolean success = false;
-        String messageKey = "";
-        String configPath = "";
+        boolean success;
+        String messageKey;
+        String configPath;
 
         if ("tab".equals(type)) {
             configPath = "health-display.tablist.enabled";
@@ -31,7 +31,6 @@ public class DisableHealthCommand {
         }
 
         if (success) {
-            // Apply change via manager's reload logic
             healthManager.reload();
             sender.sendMessage(configManager.getFormattedMessage(messageKey, "&cHealth display disabled."));
         } else {

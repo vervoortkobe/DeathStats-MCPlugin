@@ -24,6 +24,7 @@ public class HealthDisplayManager {
     private final String belowNameObjectiveName = "ds_health_belowname";
     private BukkitTask tabUpdateTask;
     private final Set<UUID> playersWithTabHealth = new HashSet<>();
+    @SuppressWarnings("MismatchedQueryAndUpdateOfCollection")
     private final Set<UUID> playersWithBelowNameHealth = new HashSet<>();
 
     public HealthDisplayManager(Main plugin, ConfigManager configManager) {
@@ -151,7 +152,7 @@ public class HealthDisplayManager {
 
 
         double currentHealth = player.getHealth();
-        double maxHealth = player.getAttribute(Attribute.MAX_HEALTH).getValue();
+        double maxHealth = Objects.requireNonNull(player.getAttribute(Attribute.MAX_HEALTH)).getValue();
         String healthColor = PlayerUtil.getHealthColor(currentHealth, maxHealth, configManager);
         String format = configManager.getTabHealthFormat();
 

@@ -12,7 +12,7 @@ import java.util.UUID;
 public class ResetCommand {
 
     @SuppressWarnings("SameReturnValue")
-    public static boolean handleResetCommand(ConfigManager configManager, DeathStatsDAO dao, ScoreboardHandler scoreboardHandler, CommandSender sender, String[] args) {
+    public static boolean handleResetCommand(ConfigManager configManager, ScoreboardHandler scoreboardHandler, CommandSender sender, String[] args) {
         if (!sender.hasPermission("deathstats.reset") && !sender.hasPermission("deathstats.admin")) {
             sender.sendMessage(configManager.getFormattedMessage("no-permission", "&cNo permission."));
             return true;
@@ -34,8 +34,8 @@ public class ResetCommand {
         UUID targetUUID = targetPlayer.getUniqueId();
         String actualName = targetPlayer.getName() != null ? targetPlayer.getName() : targetName;
 
-        dao.resetPlayerDeaths(targetUUID); // Use DAO method (saves internally)
-        scoreboardHandler.updateScoreboard(); // Update scoreboard after change
+        DeathStatsDAO.resetPlayerDeaths(targetUUID);
+        scoreboardHandler.updateScoreboard();
 
         sender.sendMessage(configManager.getFormattedMessage("reset-success", "&aDeaths reset.", "player", actualName));
         return true;

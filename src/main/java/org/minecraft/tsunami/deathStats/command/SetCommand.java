@@ -12,7 +12,7 @@ import java.util.UUID;
 public class SetCommand {
 
     @SuppressWarnings("SameReturnValue")
-    public static boolean handleSetCommand(ConfigManager configManager, DeathStatsDAO dao, ScoreboardHandler scoreboardHandler, CommandSender sender, String[] args) {
+    public static boolean handleSetCommand(ConfigManager configManager, ScoreboardHandler scoreboardHandler, CommandSender sender, String[] args) {
         if (!sender.hasPermission("deathstats.set") && !sender.hasPermission("deathstats.admin")) {
             sender.sendMessage(configManager.getFormattedMessage("no-permission", "&cNo permission."));
             return true;
@@ -46,8 +46,8 @@ public class SetCommand {
         UUID targetUUID = targetPlayer.getUniqueId();
         String actualName = targetPlayer.getName() != null ? targetPlayer.getName() : targetName;
 
-        dao.setPlayerDeaths(targetUUID, amount); // Use DAO method (saves internally)
-        scoreboardHandler.updateScoreboard(); // Update scoreboard after change
+        DeathStatsDAO.setPlayerDeaths(targetUUID, amount);
+        scoreboardHandler.updateScoreboard();
 
         sender.sendMessage(configManager.getFormattedMessage("set-success", "&aDeaths set.", "player", actualName, "deaths", String.valueOf(amount)));
         return true;
